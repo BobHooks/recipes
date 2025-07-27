@@ -41,14 +41,14 @@
     .recipe-title {
       margin: 2rem 0 1rem 0;
       font-size: 1.5rem;
-      color: #d35400; /* Changed to a vibrant orange */
+      color: #d35400;
       font-weight: bold;
       padding-bottom: 0.5rem;
       border-bottom: 2px solid #f4a261;
       font-family: Georgia, serif;
     }
     .recipe-title:hover {
-      color: #e67e22; /* Lighter orange on hover */
+      color: #e67e22;
     }
   </style>
 </head>
@@ -70,10 +70,13 @@
 
     function displayRecipes(filter = "") {
       recipesContainer.innerHTML = "";
-      const filtered = recipes.filter(r => r.title.toLowerCase().includes(filter.toLowerCase()));
+      const filtered = recipes.filter(r => 
+        r.name.toLowerCase().includes(filter.toLowerCase()) || 
+        r.transcript.toLowerCase().includes(filter.toLowerCase())
+      );
       filtered.forEach(recipe => {
         const section = document.createElement("section");
-        section.innerHTML = `<h2 class="recipe-title">${recipe.title}</h2>` + md.render(recipe.content);
+        section.innerHTML = `<h2 class="recipe-title">${recipe.name}</h2>` + md.render(recipe.transcript);
         recipesContainer.appendChild(section);
       });
     }
@@ -83,11 +86,12 @@
     fetch("recipes.json")
       .then(response => response.json())
       .then(data => {
-        recipes = data;
+        recipes = data.recipeList; // Changed to access recipeList array
         displayRecipes();
       })
       .catch(error => {
         recipesContainer.innerHTML = `<p style="color:red;">Failed to load recipes.json: ${error}</p>`;
+        console.error("Error details:", error);
       });
   </script>
 </body>

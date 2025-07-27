@@ -70,28 +70,47 @@
 
     function displayRecipes(filter = "") {
       recipesContainer.innerHTML = "";
-      const filtered = recipes.filter(r => 
-        r.name.toLowerCase().includes(filter.toLowerCase()) || 
-        r.transcript.toLowerCase().includes(filter.toLowerCase())
-      );
+      const filtered = recipes.filter(r => {
+        const name = r.name ? r.name.toLowerCase() : "";
+        const transcript = r.transcript ? r.transcript.toLowerCase() : "";
+        return name.includes(filter.toLowerCase()) || 
+               transcript.includes(filter.toLowerCase());
+      });
+      
       filtered.forEach(recipe => {
-        const section = document.createElement("section");
-        section.innerHTML = `<h2 class="recipe-title">${recipe.name}</h2>` + md.render(recipe.transcript);
-        recipesContainer.appendChild(section);
+        try {
+          const section = document.createElement("section");
+          const name = recipe.name || "Untitled Recipe";
+          const transcript = recipe.transcript || "";
+          section.innerHTML = `<h2 class="recipe-title">${name}</h2>` + md.render(transcript);
+          recipesContainer.appendChild(section);
+        } catch (e) {
+          console.error("Error rendering recipe:", recipe, e);
+        }
       });
     }
 
     searchInput.addEventListener("input", e => displayRecipes(e.target.value));
 
     fetch("recipes.json")
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then(data => {
-        recipes = data.recipeList; // Changed to access recipeList array
+        // Handle both direct array and recipeList formats
+        recipes = Array.isArray(data) ? data : (data.recipeList || []);
+        if (recipes.length === 0) {
+          throw new Error("No recipes found in the data");
+        }
         displayRecipes();
       })
       .catch(error => {
-        recipesContainer.innerHTML = `<p style="color:red;">Failed to load recipes.json: ${error}</p>`;
-        console.error("Error details:", error);
+        const errorMsg = `Failed to load recipes: ${error.message}`;
+        recipesContainer.innerHTML = `<p style="color:red;">${errorMsg}</p>`;
+        console.error(errorMsg, error);
       });
   </script>
 </body>

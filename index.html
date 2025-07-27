@@ -1,1 +1,175 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vintage Recipe Collection</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    header {
+      background: #f4a261;
+      padding: 1rem;
+      text-align: center;
+      color: white;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .markdown-body {
+      padding: 0;
+    }
+    #search {
+      display: block;
+      width: 100%;
+      margin: 0 auto 2rem;
+      padding: 12px;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .recipe-box {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      border-left: 4px solid #f4a261;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .recipe-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .recipe-title {
+      color: #d35400;
+      font-size: 1.6rem;
+      margin: 0 0 1rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #f4a261;
+      font-family: Georgia, serif;
+    }
+    .recipe-content {
+      padding: 0.5rem;
+    }
+    .no-results {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+      font-size: 1.2rem;
+    }
+    @media (max-width: 768px) {
+      .recipe-box {
+        padding: 1rem;
+      }
+      .recipe-title {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Vintage Recipe Collection</h1>
+  </header>
+  <div class="container">
+    <input type="text" id="search" placeholder="Search recipes...">
+    <div class="markdown-body" id="recipes"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+  <script>
+    const md = window.markdownit({ html: true, linkify: true, typographer: true });
+    const recipesContainer = document.getElementById("recipes");
+    const searchInput = document.getElementById("search");
+    let recipes = [];
+
+    function displayRecipes(filter = "") {
+      if (!Array.isArray(recipes)) {
+        recipesContainer.innerHTML = "<div class='no-results'>Error: Recipes data is not in the correct format</div>";
+        return;
+      }
+
+      recipesContainer.innerHTML = "";
+      const searchTerm = filter.toLowerCase();
+      
+      const filtered = recipes.filter(r => {
+        try {
+          const name = r.name ? r.name.toLowerCase() : "";
+          const transcript = r.transcript ? r.transcript.toLowerCase() : "";
+          return name.includes(searchTerm) || transcript.includes(searchTerm);
+        } catch (e) {
+          console.error("Error filtering recipe:", r, e);
+          return false;
+        }
+      });
+
+      if (filtered.length === 0) {
+        recipesContainer.innerHTML = "<div class='no-results'>No recipes found matching your search</div>";
+        return;
+      }
+
+      filtered.forEach(recipe => {
+        try {
+          const recipeBox = document.createElement("div");
+          recipeBox.className = "recipe-box";
+          
+          const title = document.createElement("h2");
+          title.className = "recipe-title";
+          title.textContent = recipe.name || "Untitled Recipe";
+          
+          const content = document.createElement("div");
+          content.className = "recipe-content";
+          content.innerHTML = md.render(recipe.transcript || "");
+          
+          recipeBox.appendChild(title);
+          recipeBox.appendChild(content);
+          recipesContainer.appendChild(recipeBox);
+        } catch (e) {
+          console.error("Error rendering recipe:", recipe, e);
+        }
+      });
+    }
+
+    searchInput.addEventListener("input", e => displayRecipes(e.target.value));
+
+    fetch("recipes.json")
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        recipes = Array.isArray(data) ? data : (data.recipeList || []);
+        
+        if (!recipes.length) {
+          recipesContainer.innerHTML = "<div class='no-results'>No recipes found in the data</div>";
+          return;
+        }
+        
+        displayRecipes();
+      })
+      .catch(error => {
+        recipesContainer.innerHTML = `
+          <div class="recipe-box" style="background: #ffeeee;">
+            <h2 class="recipe-title" style="color: #c0392b;">Error</h2>
+            <div class="recipe-content">
+              <p>Failed to load recipes: ${error.message}</p>
+              <p>Please check the console for details.</p>
+            </div>
+          </div>
+        `;
+        console.error("Error loading recipes:", error);
+      });
+  </script>
+</body>
+</html>

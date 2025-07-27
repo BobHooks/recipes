@@ -1,85 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Recipes</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        
-        /* Add this new style for recipe names */
-        .recipe-name {
-            color: #2a6496; /* A nice blue color */
-            font-weight: bold;
-            font-size: 1.2em;
-            margin-bottom: 5px;
-        }
-        
-        .recipe {
-            margin-bottom: 30px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-        }
-        
-        #search {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vintage Recipe Collection</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fdfbf7;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #f4a261;
+      padding: 1rem;
+      text-align: center;
+      color: white;
+    }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .markdown-body {
+      padding: 1rem;
+    }
+    #search {
+      display: block;
+      width: 100%;
+      margin: 0 auto 1.5rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .recipe-title {
+      margin: 2rem 0 1rem 0;
+      font-size: 1.5rem;
+      color: #d35400; /* Changed to a vibrant orange */
+      font-weight: bold;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #f4a261;
+      font-family: Georgia, serif;
+    }
+    .recipe-title:hover {
+      color: #e67e22; /* Lighter orange on hover */
+    }
+  </style>
 </head>
 <body>
-    <h1>Recipes</h1>
+  <header>
+    <h1>Vintage Recipe Collection</h1>
+  </header>
+  <div class="container">
     <input type="text" id="search" placeholder="Search recipes...">
-    <div id="recipes"></div>
+    <div class="markdown-body" id="recipes"></div>
+  </div>
 
-    <script>
-        fetch('recipes.json')
-            .then(response => response.json())
-            .then(data => {
-                const recipesContainer = document.getElementById('recipes');
-                const recipeList = data.recipeList;
-                
-                recipeList.forEach(recipe => {
-                    const recipeElement = document.createElement('div');
-                    recipeElement.className = 'recipe';
-                    
-                    // Add the colored recipe name
-                    const nameElement = document.createElement('div');
-                    nameElement.className = 'recipe-name';
-                    nameElement.textContent = recipe.name;
-                    recipeElement.appendChild(nameElement);
-                    
-                    // Add the transcript (markdown content would need a converter if you want proper formatting)
-                    const transcriptElement = document.createElement('div');
-                    transcriptElement.innerHTML = recipe.transcript.replace(/\n/g, '<br>');
-                    recipeElement.appendChild(transcriptElement);
-                    
-                    recipesContainer.appendChild(recipeElement);
-                });
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+  <script>
+    const md = window.markdownit({ html: true, linkify: true, typographer: true });
+    const recipesContainer = document.getElementById("recipes");
+    const searchInput = document.getElementById("search");
+    let recipes = [];
 
-                // Search functionality
-                document.getElementById('search').addEventListener('input', function(e) {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const recipes = document.querySelectorAll('.recipe');
-                    
-                    recipes.forEach(recipe => {
-                        const text = recipe.textContent.toLowerCase();
-                        if (text.includes(searchTerm)) {
-                            recipe.style.display = 'block';
-                        } else {
-                            recipe.style.display = 'none';
-                        }
-                    });
-                });
-            })
-            .catch(error => console.error('Error loading recipes:', error));
-    </script>
+    function displayRecipes(filter = "") {
+      recipesContainer.innerHTML = "";
+      const filtered = recipes.filter(r => r.title.toLowerCase().includes(filter.toLowerCase()));
+      filtered.forEach(recipe => {
+        const section = document.createElement("section");
+        section.innerHTML = `<h2 class="recipe-title">${recipe.title}</h2>` + md.render(recipe.content);
+        recipesContainer.appendChild(section);
+      });
+    }
+
+    searchInput.addEventListener("input", e => displayRecipes(e.target.value));
+
+    fetch("recipes.json")
+      .then(response => response.json())
+      .then(data => {
+        recipes = data;
+        displayRecipes();
+      })
+      .catch(error => {
+        recipesContainer.innerHTML = `<p style="color:red;">Failed to load recipes.json: ${error}</p>`;
+      });
+  </script>
 </body>
 </html>

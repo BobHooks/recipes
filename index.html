@@ -67,6 +67,11 @@
       color: #666;
       font-size: 1.2rem;
     }
+    .recipe-image {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
     @media (max-width: 768px) {
       .recipe-box {
         padding: 1rem;
@@ -84,7 +89,6 @@
   <div class="container">
     <input type="text" id="search" placeholder="Search recipes...">
     <div class="markdown-body" id="recipes"></div>
-    <img src="000_0104.jpg"></img>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
@@ -127,6 +131,15 @@
           const title = document.createElement("h2");
           title.className = "recipe-title";
           title.textContent = recipe.name || "Untitled Recipe";
+
+          // Check if the recipe has a 'pic' field and display image if it exists
+          if (recipe.pic) {
+            const image = document.createElement("img");
+            image.src = recipe.pic;
+            image.alt = recipe.name || "Recipe Image";
+            image.className = "recipe-image";
+            recipeBox.appendChild(image);
+          }
           
           const content = document.createElement("div");
           content.className = "recipe-content";

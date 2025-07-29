@@ -135,7 +135,7 @@
           // Check if the recipe has a 'pic' field and create a link to the image
           if (recipe.pic) {
             const imageLink = document.createElement("a");
-            imageLink.href = recipe.pic;  // Link to the image in the 'imgs' folder
+            imageLink.href = "imgs/" + recipe.pic;  // Link to the image in the 'imgs' folder
             imageLink.target = "_blank";  // Open in a new window/tab
             imageLink.className = "recipe-image-link";
             imageLink.textContent = "View recipe as Image";  // You can customize this text

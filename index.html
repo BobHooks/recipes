@@ -67,10 +67,10 @@
       color: #666;
       font-size: 1.2rem;
     }
-    .recipe-image {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-bottom: 1rem;
+    .recipe-image-link {
+      text-decoration: none;
+      color: #d35400;
+      font-weight: bold;
     }
     @media (max-width: 768px) {
       .recipe-box {
@@ -132,13 +132,14 @@
           title.className = "recipe-title";
           title.textContent = recipe.name || "Untitled Recipe";
 
-          // Check if the recipe has a 'pic' field and display image if it exists
+          // Check if the recipe has a 'pic' field and create a link to the image
           if (recipe.pic) {
-            const image = document.createElement("img");
-            image.src = recipe.pic;
-            image.alt = recipe.name || "Recipe Image";
-            image.className = "recipe-image";
-            recipeBox.appendChild(image);
+            const imageLink = document.createElement("a");
+            imageLink.href = recipe.pic;  // Link to the image in the 'imgs' folder
+            imageLink.target = "_blank";  // Open in a new window/tab
+            imageLink.className = "recipe-image-link";
+            imageLink.textContent = "View Image";  // You can customize this text
+            recipeBox.appendChild(imageLink);
           }
           
           const content = document.createElement("div");
